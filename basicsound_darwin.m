@@ -16,8 +16,8 @@ void basicsound_play(const char* filename, int loop)
 		initWithContentsOfFile: [NSString stringWithUTF8String: filename] 
 				   byReference: YES];
 
-	[sound setLoops: (BOOL)loop];
-	[sound play];
+	[activeSound setLoops: (BOOL)loop];
+	[activeSound play];
 	pthread_mutex_unlock(&mtx);
 }
 
