@@ -1,0 +1,5 @@
+_cgo*
+_go*
+_obj
+*.cgo1.go
+*.cgo2.c
