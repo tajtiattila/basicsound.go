@@ -89,17 +89,18 @@ static AudioQueue* audioQueue;
 
 void basicsound_init()
 {
-	[[NSAutoreleasePool alloc] init];
 	audioQueue = [[AudioQueue alloc] init];
 }
 
 void basicsound_play(const char* filename, int loop)
 {
+	NSAutoreleasePool *pool = [[NSAutoreleasePool alloc] init];
 	NSSound* sound = [[NSSound alloc] 
 		initWithContentsOfFile: [NSString stringWithUTF8String: filename] 
 				   byReference: YES];
 	[sound setLoops: (BOOL)loop];
 	[audioQueue playSound:sound];
+	[pool drain];
 }
 
 void basicsound_stop()
