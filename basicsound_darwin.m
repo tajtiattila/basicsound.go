@@ -1,36 +1,14 @@
 #import <Cocoa/Cocoa.h>
-#include <pthread.h>
 
 @class AudioQueue;
 
-@interface AudioJob : NSObject
+@interface AudioQueue : NSObject < NSSoundDelegate >
 {
-	NSCondition *finishedSignal;
+	NSSound* activeSound;
+	NSThread* runLoopThread;
 }
 
-- (void)addToQueue:(AudioQueue *)aQueue;
-
-@end
-
-@implementation AudioQueue
-- (void)addToQueue:(AudioQueue *)aQueue
-{
-	[self
-		performSelector:@selector(performIterationAndRequeueInJobQueue:)
-		onThread:runLoopThread 
-		withObject:self
-		waitUntilDone:NO];
-}
-
-@end
-
-@interface AudioQueue : NSObject
-{
-	NSThread *runLoopThread;
-	BOOL terminated;
-}
-
-- (void)add:(AudioJob *)aJob;
+- (void)playSound:(NSSound *)sound;
 @end
 
 @implementation AudioQueue
@@ -40,6 +18,7 @@
 	self = [super init];
 	if (self != nil)
 	{
+		activeSound = nil;
 		runLoopThread = [[NSThread alloc] initWithTarget:self selector:@selector(runLoop) object:nil];
 		[runLoopThread start];
 	}
@@ -65,61 +44,67 @@
 	[dummyPort release];
 }
 
-- (void)add:(AudioJob *)aJob
+- (void)sound:(NSSound *)sound didFinishPlaying:(BOOL)aBool
 {
-	[aJob
-		performSelector:@selector(performIterationAndRequeueInJobQueue:)
+	if (sound == activeSound) {
+		[activeSound release];
+		activeSound = nil;
+	}
+}
+
+- (void)playSound:(NSSound *)sound
+{
+	[self
+		performSelector:@selector(queueSound:)
 		onThread:runLoopThread 
-		withObject:self
-		waitUntilDone:NO];
+		withObject:sound
+		waitUntilDone:YES];
+}
+
+- (void)queueSound:(NSSound *)sound
+{
+	if (activeSound != nil) {
+		[activeSound stop];
+		[activeSound release];
+	}
+	activeSound = sound;
+	[activeSound setDelegate:self];
+	[activeSound play];
 }
 
 - (void)dealloc
 {
 	[runLoopThread release];
 	runLoopThread = nil;
+	[activeSound release];
+	activeSound = nil;
 	[super dealloc];
 }
 
-
 @end
 
-pthread_mutex_t mtx = PTHREAD_MUTEX_INITIALIZER;
-NSSound* activeSound;
+////////////////////////////////////////////////////////////////////////////////
+
+static AudioQueue* audioQueue;
 
 void basicsound_init()
 {
-	[[NSAutoreleasePool alloc] init];
+	audioQueue = [[AudioQueue alloc] init];
 }
 
 void basicsound_play(const char* filename, int loop)
 {
-	pthread_mutex_lock(&mtx);
-	stopcurrent_impl();
-	activeSound = [[NSSound alloc] 
-		initWithContentsOfFile: [NSString stringWithUTF8String: filename] 
+	NSString* strgfilename = [NSString stringWithUTF8String: filename];
+	NSSound* sound = [[NSSound alloc] 
+		initWithContentsOfFile: strgfilename
 				   byReference: YES];
-
-	[activeSound setLoops: (BOOL)loop];
-	[activeSound play];
-	pthread_mutex_unlock(&mtx);
-
-	[[NSRunLoop currentRunLoop] run];
+	[sound setLoops: (BOOL)loop];
+	[audioQueue playSound:sound];
+	[strgfilename release];
 }
 
 void basicsound_stop()
 {
-	pthread_mutex_lock(&mtx);
-	stopcurrent_impl();
-	pthread_mutex_unlock(&mtx);
-}
-
-
-void stopcurrent_impl()
-{
-	if (activeSound) {
-		[activeSound stop];
-		activeSound = NULL;
-	}
+	[audioQueue playSound:nil];
 }
 
