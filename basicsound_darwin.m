@@ -58,7 +58,7 @@
 		performSelector:@selector(queueSound:)
 		onThread:runLoopThread 
 		withObject:sound
-		waitUntilDone:YES];
+		waitUntilDone:NO];
 }
 
 - (void)queueSound:(NSSound *)sound
@@ -89,18 +89,17 @@ static AudioQueue* audioQueue;
 
 void basicsound_init()
 {
+	[[NSAutoreleasePool alloc] init];
 	audioQueue = [[AudioQueue alloc] init];
 }
 
 void basicsound_play(const char* filename, int loop)
 {
-	NSString* strgfilename = [NSString stringWithUTF8String: filename];
 	NSSound* sound = [[NSSound alloc] 
-		initWithContentsOfFile: strgfilename
+		initWithContentsOfFile: [NSString stringWithUTF8String: filename] 
 				   byReference: YES];
 	[sound setLoops: (BOOL)loop];
 	[audioQueue playSound:sound];
-	[strgfilename release];
 }
 
 void basicsound_stop()
