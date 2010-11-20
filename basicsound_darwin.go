@@ -1,4 +1,4 @@
-package gobasicsound
+package basicsound
 
 /*
 extern void basicsound_init();

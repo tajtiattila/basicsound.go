@@ -1,12 +1,12 @@
 include $(GOROOT)/src/Make.inc
 
-TARG=gobasicsound
+TARG=basicsound
 
-CGOFILES=gobasicsound_darwin.go
-CGO_LDFLAGS=basicsound_darwin.o -framework Cocoa
-CGO_DEPS=basicsound_darwin.o
+CGOFILES=basicsound_darwin.go
+CGO_LDFLAGS=lib_darwin.o -framework Cocoa
+CGO_DEPS=lib_darwin.o
 
-GOFILES_windows=gobasicsound_windows.go
+GOFILES_windows=basicsound_windows.go
 CGOFILES_windows=
 
 
