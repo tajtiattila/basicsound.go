@@ -4,3 +4,4 @@ _obj
 *.cgo1.go
 *.cgo2.c
 _test*
+[68].out.exe
