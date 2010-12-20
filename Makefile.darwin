@@ -3,8 +3,8 @@ include $(GOROOT)/src/Make.inc
 TARG=basicsound
 
 CGOFILES=basicsound_darwin.go
-CGO_LDFLAGS=lib_darwin.o -framework Cocoa
-CGO_DEPS=lib_darwin.o
+CGO_OFILES=lib_darwin.o
+CGO_LDFLAGS=-framework Cocoa
 
 include $(GOROOT)/src/Make.pkg
 
