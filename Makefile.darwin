@@ -3,13 +3,22 @@ include $(GOROOT)/src/Make.inc
 TARG=basicsound
 
 CGOFILES=basicsound_darwin.go
-CGO_OFILES=lib_darwin.o
-CGO_LDFLAGS=-framework Cocoa
+#CGO_OFILES=lib_darwin.o
+#CGO_LDFLAGS=-framework Cocoa
+DYLIB=$(TARG)
+CGO_LDFLAGS=-L. -lbasicsound
+
+INSTALLFILES+=$(pkgdir)/lib$(DYLIB).dylib
 
 include $(GOROOT)/src/Make.pkg
 
-%.o : %.m
-	$(HOST_CC) -c -o $@ $<
+lib$(DYLIB).dylib : lib_darwin.m
+	gcc -o $@ $< -framework Foundation -framework AppKit -dynamiclib
+
+$(pkgdir)/lib$(DYLIB).dylib: lib$(DYLIB).dylib
+	@test -d $(QUOTED_GOROOT)/pkg && mkdir -p $(pkgdir)
+	rm -f "$@"
+	cp $< "$@"
 
 % : install %.go
 	$(GC) $*.go
