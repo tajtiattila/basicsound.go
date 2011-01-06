@@ -53,7 +53,8 @@ func playsound(pname *string, loop bool) {
 	if loop { flags |= SND_LOOP }
 	var name uintptr
 	if pname != nil {
-		name = uintptr(unsafe.Pointer(syscall.StringToUTF16Ptr(*pname)))
+		tmp := syscall.StringToUTF16Ptr(*pname)
+		name = uintptr(unsafe.Pointer(tmp))
 	} else {
 		name = uintptr(0)
 	}
